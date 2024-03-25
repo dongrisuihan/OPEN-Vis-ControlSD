@@ -8,6 +8,7 @@ from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.utilities.distributed import rank_zero_only
 
 
+
 class ImageLogger(Callback):
     def __init__(self, batch_frequency=2000, max_images=4, clamp=True, increase_log_steps=True,
                  rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=False,
@@ -34,7 +35,7 @@ class ImageLogger(Callback):
             grid = grid.transpose(0, 1).transpose(1, 2).squeeze(-1)
             grid = grid.numpy()
             grid = (grid * 255).astype(np.uint8)
-            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(k, global_step, current_epoch, batch_idx)
+            filename = "gs-{:06}_e-{:06}_b-{:06}/{}.png".format(global_step, current_epoch, batch_idx,k)
             path = os.path.join(root, filename)
             os.makedirs(os.path.split(path)[0], exist_ok=True)
             Image.fromarray(grid).save(path)
@@ -52,6 +53,7 @@ class ImageLogger(Callback):
                 pl_module.eval()
 
             with torch.no_grad():
+                # print('log_images_kwargs',self.log_images_kwargs)
                 images = pl_module.log_images(batch, split=split, **self.log_images_kwargs)
 
             for k in images:
@@ -71,6 +73,6 @@ class ImageLogger(Callback):
     def check_frequency(self, check_idx):
         return check_idx % self.batch_freq == 0
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if not self.disabled:
-            self.log_img(pl_module, batch, batch_idx, split="train")
+            self.log_img(pl_module, batch, batch_idx, split="train_deconv5")

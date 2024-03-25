@@ -2,6 +2,14 @@ import einops
 import torch
 import torch as th
 import torch.nn as nn
+import torchvision.transforms as transforms
+import sys
+import numpy as np
+import random
+from einops import rearrange, repeat,reduce
+
+sys.path.append('/home/chenzhiqiang/code/hypercolumn')
+from vit_pytorch.train_V1_sep_new import Column_trans_rot_lgn
 
 from ldm.modules.diffusionmodules.util import (
     conv_nd,
@@ -43,6 +51,93 @@ class ControlledUnetModel(UNetModel):
 
         h = h.type(x.dtype)
         return self.out(h)
+
+def disabled_train(self, mode=True):
+    """Overwrite model.train with this function to make sure train/eval mode
+    does not change anymore."""
+    return self
+
+class HyperColumnLGN(nn.Module):
+    def __init__(self,key=0,restore_ckpt = './models/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
+        super().__init__()
+        ckpt = torch.load(restore_ckpt)
+        hc = Column_trans_rot_lgn(ckpt['arg'])
+        hc.load_state_dict(ckpt['state_dict'], strict=False)
+        self.lgn_ende = hc.lgn_ende[0].eval()
+        self.lgn_ende.train = disabled_train
+        
+        for param in self.lgn_ende.parameters():
+            param.requires_grad = False
+
+        # self.groups = [[2,3],[0,1,4,8,9,15],[5,6,7,10,12],[11,13,14]]
+        self.groups = [[0,1,4,8,9,15],[2,3],[5,12],[10],[6,7],[11,13,14]]
+            
+        # self.p = [1.,0.5,0.25,0.125]
+        self.p = [0. for i in range(len(self.groups))]
+        self.p[0] = 1.
+
+        norm_mean = np.array([0.50705882, 0.48666667, 0.44078431])
+        norm_std = np.array([0.26745098, 0.25568627, 0.27607843])
+        self.norm = transforms.Normalize(norm_mean, norm_std)
+        self.cond = [5]
+        self.slct = None
+
+    # def forward(self,x):
+    #     s = x.size()
+    #     r = torch.zeros(1,16,1,1).to(x.device)
+
+    #     if self.cond is None:
+    #         c = [i for i in range(len(self.groups))]
+    #         random.shuffle(c)
+    #         # print(self.groups[c[0]])
+    #         pa = random.random()
+    #         for i in range(4):
+    #             if pa < self.p[i]:
+    #                 for j in self.groups[c[i]]:
+    #                     r[:,j,:,:] = 1.
+    #     else:
+    #         for i in self.cond:
+    #             for j in self.groups[i]:
+    #                 r[:,j,:,:] = 1
+
+    #     r = repeat(r,'n c h w -> n (c repeat) h w',repeat=4)
+    #     return self.lgn_ende(self.norm(x))*r
+    
+    def forward(self,x):
+        s = x.size()
+        r = torch.zeros(1,16,1,1).to(x.device)
+
+        if self.cond is None:
+            c = [i for i in range(len(self.groups))]
+            random.shuffle(c)
+            # print(self.groups[c[0]])
+            pa = random.random()
+            for i in range(len(self.groups)):
+                if pa < self.p[i]:
+                    for j in self.groups[c[i]]:
+                        r[:,j,:,:] = 1.
+        else:
+            for i in self.cond:
+                for j in self.groups[i]:
+                    r[:,j,:,:] = 1
+
+        r = repeat(r,'n c h w -> n (c repeat) h w',repeat=4)
+        return self.lgn_ende.deconv(self.lgn_ende(self.norm(x))*r)
+    
+    def deconv(self,x):
+        s = x.size()
+        r = torch.zeros(1,16,1,1).to(x.device)
+        if self.cond is not None:
+            for i in self.cond:
+                for j in self.groups[i]:
+                    r[:,j,:,:] = 1
+
+        r = repeat(r,'n c h w -> n (c repeat) h w',repeat=4)
+        conv = self.lgn_ende(self.norm(x))*r
+        deconv = self.lgn_ende.deconv(conv)
+        deconv = (deconv - reduce(deconv,'b c h w -> b c () ()', 'min'))/(reduce(deconv,'b c h w -> b c () ()', 'max')-reduce(deconv,'b c h w -> b c () ()', 'min'))*2.-1.
+
+        return deconv
 
 
 class ControlNet(nn.Module):
@@ -144,7 +239,41 @@ class ControlNet(nn.Module):
         )
         self.zero_convs = nn.ModuleList([self.make_zero_conv(model_channels)])
 
-        self.input_hint_block = TimestepEmbedSequential(
+        # self.input_hint_block = TimestepEmbedSequential(
+        #     conv_nd(dims, hint_channels, 16, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 16, 16, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 16, 32, 3, padding=1, stride=2),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 32, 32, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 32, 96, 3, padding=1, stride=2),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 96, 96, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 96, 256, 3, padding=1, stride=2),
+        #     nn.SiLU(),
+        #     zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
+        # )
+
+        # self.input_hint_block_new = TimestepEmbedSequential(
+        #     HyperColumnLGN(),
+        #     # nn.SiLU(),
+        #     conv_nd(dims, 64, 64, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 64, 128, 3, padding=1,stride=2),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 128, 128, 3, padding=1,stride=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 128, 256, 3, padding=1,stride=1),
+        #     nn.SiLU(),
+        #     zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
+        # )
+
+        self.input_hint_block_new = TimestepEmbedSequential(
+            HyperColumnLGN(),
+            # nn.SiLU(),
             conv_nd(dims, hint_channels, 16, 3, padding=1),
             nn.SiLU(),
             conv_nd(dims, 16, 16, 3, padding=1),
@@ -284,8 +413,13 @@ class ControlNet(nn.Module):
     def forward(self, x, hint, timesteps, context, **kwargs):
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
         emb = self.time_embed(t_emb)
+        # print('time_embed:',self.time_embed)
 
-        guided_hint = self.input_hint_block(hint, emb, context)
+        # print('ControlNet foward emb:',emb.size(),'hint:',hint.size(),'context:',context.size())
+
+        guided_hint = self.input_hint_block_new(hint, emb, context)
+        # print(self.input_hint_block_new)
+        # print('ControlNet foward emb:',emb.size(),'hint:',hint.size(),'context:',context.size(),'guided_hint:',guided_hint.size())
 
         outs = []
 
@@ -313,11 +447,21 @@ class ControlLDM(LatentDiffusion):
         self.control_key = control_key
         self.only_mid_control = only_mid_control
         self.control_scales = [1.0] * 13
+        self.select()
+    
+    def training_step(self, batch, batch_idx):
+        return super().training_step(batch, batch_idx)
+    
+    
+    # def validation_step(self, batch, batch_idx):
+    #     return super().training_step(batch, batch_idx)
 
     @torch.no_grad()
     def get_input(self, batch, k, bs=None, *args, **kwargs):
         x, c = super().get_input(batch, self.first_stage_key, *args, **kwargs)
         control = batch[self.control_key]
+        # print('c:',c)
+        
         if bs is not None:
             control = control[:bs]
         control = control.to(self.device)
@@ -347,7 +491,7 @@ class ControlLDM(LatentDiffusion):
     @torch.no_grad()
     def log_images(self, batch, N=4, n_row=2, sample=False, ddim_steps=50, ddim_eta=0.0, return_keys=None,
                    quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
-                   plot_diffusion_rows=False, unconditional_guidance_scale=9.0, unconditional_guidance_label=None,
+                   plot_diffusion_rows=False, unconditional_guidance_scale=9.1, unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
         use_ddim = ddim_steps is not None
@@ -394,14 +538,21 @@ class ControlLDM(LatentDiffusion):
             uc_cross = self.get_unconditional_conditioning(N)
             uc_cat = c_cat  # torch.zeros_like(c_cat)
             uc_full = {"c_concat": [uc_cat], "c_crossattn": [uc_cross]}
-            samples_cfg, _ = self.sample_log(cond={"c_concat": [c_cat], "c_crossattn": [c]},
-                                             batch_size=N, ddim=use_ddim,
-                                             ddim_steps=ddim_steps, eta=ddim_eta,
-                                             unconditional_guidance_scale=unconditional_guidance_scale,
-                                             unconditional_conditioning=uc_full,
-                                             )
-            x_samples_cfg = self.decode_first_stage(samples_cfg)
-            log[f"samples_cfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
+            for slct in self.slct:
+                self.control_model.input_hint_block_new[0].cond = slct['cond']
+                suffix = slct['suffix']
+                print(suffix)
+                samples_cfg, _ = self.sample_log(cond={"c_concat": [c_cat], "c_crossattn": [c]},
+                                                batch_size=N, ddim=use_ddim,
+                                                ddim_steps=ddim_steps, eta=ddim_eta,
+                                                unconditional_guidance_scale=unconditional_guidance_scale,
+                                                unconditional_conditioning=uc_full,
+                                                )
+                x_samples_cfg = self.decode_first_stage(samples_cfg)
+                deconv = self.control_model.input_hint_block_new[0].deconv(c_cat)
+                log[f"{suffix}_samples_cfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
+                log[f"{suffix}_deconv_samples_cfg_scale_{unconditional_guidance_scale:.2f}"] = deconv
+                # self.control_model.input_hint_block_new[0].cond = None
 
         return log
 
@@ -433,3 +584,11 @@ class ControlLDM(LatentDiffusion):
             self.control_model = self.control_model.cpu()
             self.first_stage_model = self.first_stage_model.cuda()
             self.cond_stage_model = self.cond_stage_model.cuda()
+
+    @torch.no_grad()
+    def select(self):
+        # self.slct = [{'cond':[0],'suffix':'0'},{'cond':[1],'suffix':'1'},{'cond':[2],'suffix':'2'},{'cond':[3],'suffix':'3'},{'cond':[0,1],'suffix':'01'},
+        #              {'cond':[0,2],'suffix':'02'},{'cond':[0,3],'suffix':'03'},{'cond':[1,2],'suffix':'12'},{'cond':[1,3],'suffix':'13'},{'cond':[2,3],'suffix':'23'},
+        #              {'cond':[0,1,2],'suffix':'012'},{'cond':[0,1,3],'suffix':'013'},{'cond':[1,2,3],'suffix':'123'},
+        #              {'cond':[0,1,2,3],'suffix':'0123'}]
+        self.slct = [{'cond':[i],'suffix':f'{i}'} for i in [5]]
