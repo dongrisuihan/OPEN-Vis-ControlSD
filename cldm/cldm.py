@@ -8,8 +8,8 @@ import numpy as np
 import random
 from einops import rearrange, repeat,reduce
 
-sys.path.append('/home/chenzhiqiang/code/hypercolumn')
-from vit_pytorch.train_V1_sep_new import Column_trans_rot_lgn
+# sys.path.append('/home/chenzhiqiang/code/hypercolumn')
+from hypercolumn.vit_pytorch.train_V1_sep_new import Column_trans_rot_lgn
 
 from ldm.modules.diffusionmodules.util import (
     conv_nd,

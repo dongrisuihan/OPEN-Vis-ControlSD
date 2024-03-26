@@ -34,9 +34,9 @@ model.only_mid_control = only_mid_control
 dataset = MyDatasetCOCO()
 dataset_val = MyDatasetCOCO_val()
 dataloader = DataLoader(dataset, num_workers=0, batch_size=batch_size, shuffle=True)
-logger = ImageLogger(batch_frequency=logger_freq,split='train_deconv0')
+logger = ImageLogger(batch_frequency=logger_freq,split='train_deconv00')
 checkpoint_callback = ModelCheckpoint(
-    dirpath=f'image_log/checkpoint_deconv0/', 
+    dirpath=f'image_log/checkpoint_deconv00/', 
     save_top_k=-1,
     save_last=True,
     save_weights_only=False, 
