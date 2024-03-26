@@ -58,7 +58,7 @@ def disabled_train(self, mode=True):
     return self
 
 class HyperColumnLGN(nn.Module):
-    def __init__(self,key=0,restore_ckpt = './models/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
+    def __init__(self,key=0,hypercond=[0],restore_ckpt = './models/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
         super().__init__()
         ckpt = torch.load(restore_ckpt)
         hc = Column_trans_rot_lgn(ckpt['arg'])
@@ -79,7 +79,7 @@ class HyperColumnLGN(nn.Module):
         norm_mean = np.array([0.50705882, 0.48666667, 0.44078431])
         norm_std = np.array([0.26745098, 0.25568627, 0.27607843])
         self.norm = transforms.Normalize(norm_mean, norm_std)
-        self.cond = [5]
+        self.cond = hypercond
         self.slct = None
 
     # def forward(self,x):
@@ -170,6 +170,7 @@ class ControlNet(nn.Module):
             num_attention_blocks=None,
             disable_middle_self_attn=False,
             use_linear_in_transformer=False,
+            hypercond=[0]
     ):
         super().__init__()
         if use_spatial_transformer:
@@ -272,7 +273,7 @@ class ControlNet(nn.Module):
         # )
 
         self.input_hint_block_new = TimestepEmbedSequential(
-            HyperColumnLGN(),
+            HyperColumnLGN(hypercond=hypercond),
             # nn.SiLU(),
             conv_nd(dims, hint_channels, 16, 3, padding=1),
             nn.SiLU(),
@@ -447,6 +448,7 @@ class ControlLDM(LatentDiffusion):
         self.control_key = control_key
         self.only_mid_control = only_mid_control
         self.control_scales = [1.0] * 13
+        self.hypercond = control_stage_config['params']['hypercond']
         self.select()
     
     def training_step(self, batch, batch_idx):
@@ -591,4 +593,4 @@ class ControlLDM(LatentDiffusion):
         #              {'cond':[0,2],'suffix':'02'},{'cond':[0,3],'suffix':'03'},{'cond':[1,2],'suffix':'12'},{'cond':[1,3],'suffix':'13'},{'cond':[2,3],'suffix':'23'},
         #              {'cond':[0,1,2],'suffix':'012'},{'cond':[0,1,3],'suffix':'013'},{'cond':[1,2,3],'suffix':'123'},
         #              {'cond':[0,1,2,3],'suffix':'0123'}]
-        self.slct = [{'cond':[i],'suffix':f'{i}'} for i in [5]]
+        self.slct = [{'cond':[i],'suffix':f'{i}'} for i in self.hypercond]

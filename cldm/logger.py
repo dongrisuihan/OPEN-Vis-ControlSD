@@ -12,7 +12,7 @@ from pytorch_lightning.utilities.distributed import rank_zero_only
 class ImageLogger(Callback):
     def __init__(self, batch_frequency=2000, max_images=4, clamp=True, increase_log_steps=True,
                  rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=False,
-                 log_images_kwargs=None):
+                 log_images_kwargs=None,split='train_deconv0'):
         super().__init__()
         self.rescale = rescale
         self.batch_freq = batch_frequency
@@ -24,6 +24,7 @@ class ImageLogger(Callback):
         self.log_on_batch_idx = log_on_batch_idx
         self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
         self.log_first_step = log_first_step
+        self.split = split
 
     @rank_zero_only
     def log_local(self, save_dir, split, images, global_step, current_epoch, batch_idx):
@@ -75,4 +76,4 @@ class ImageLogger(Callback):
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if not self.disabled:
-            self.log_img(pl_module, batch, batch_idx, split="train_deconv5")
+            self.log_img(pl_module, batch, batch_idx, split=self.split)

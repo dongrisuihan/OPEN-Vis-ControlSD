@@ -8,7 +8,7 @@ from cldm.model import create_model, load_state_dict
 from pytorch_lightning.callbacks import ModelCheckpoint
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 # Configs
 resume_path = './models/control_sd15_ini.ckpt'
@@ -34,9 +34,9 @@ model.only_mid_control = only_mid_control
 dataset = MyDatasetCOCO()
 dataset_val = MyDatasetCOCO_val()
 dataloader = DataLoader(dataset, num_workers=0, batch_size=batch_size, shuffle=True)
-logger = ImageLogger(batch_frequency=logger_freq)
+logger = ImageLogger(batch_frequency=logger_freq,split='train_deconv0')
 checkpoint_callback = ModelCheckpoint(
-    dirpath=f'image_log/checkpoint_deconv5/', 
+    dirpath=f'image_log/checkpoint_deconv0/', 
     save_top_k=-1,
     save_last=True,
     save_weights_only=False, 

@@ -34,6 +34,7 @@ model:
         context_dim: 768
         use_checkpoint: True
         legacy: False
+        hypercond: [0]
 
     unet_config:
       target: cldm.cldm.ControlledUnetModel
