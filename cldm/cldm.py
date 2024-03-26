@@ -58,7 +58,7 @@ def disabled_train(self, mode=True):
     return self
 
 class HyperColumnLGN(nn.Module):
-    def __init__(self,key=0,hypercond=[0],restore_ckpt = './models/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
+    def __init__(self,key=0,hypercond=[0],restore_ckpt = './hypercolumn/checkpoint/imagenet/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
         super().__init__()
         ckpt = torch.load(restore_ckpt)
         hc = Column_trans_rot_lgn(ckpt['arg'])
