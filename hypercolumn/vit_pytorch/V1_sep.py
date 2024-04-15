@@ -41,7 +41,7 @@ class Lgn_ende(nn.Module):
         # self.to_channel = Rearrange('b nv (vl h) w -> b (nv vl) h w',vl=arg.vector_length)
         self.bn = nn.Identity()
         
-        self.apply(weights_init)
+        # self.apply(weights_init)
 
     def forward(self,x):
         return self.nonlinear(self.to_channel(self.bn(self.to_column(self.conv(x)))))

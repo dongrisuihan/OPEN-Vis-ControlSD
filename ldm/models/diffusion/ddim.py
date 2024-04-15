@@ -184,6 +184,7 @@ class DDIMSampler(object):
                       dynamic_threshold=None):
         b, *_, device = *x.shape, x.device
         # print('unconditional_conditioning:',unconditional_conditioning)
+        # print('c:',c)
 
         if unconditional_conditioning is None or unconditional_guidance_scale == 1.:
             model_output = self.model.apply_model(x, t, c)

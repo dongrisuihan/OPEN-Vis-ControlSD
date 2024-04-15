@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import random
 from einops import rearrange, repeat,reduce
+from torchvision import transforms
 
 # sys.path.append('/home/chenzhiqiang/code/hypercolumn')
 from hypercolumn.vit_pytorch.train_V1_sep_new import Column_trans_rot_lgn
@@ -57,20 +58,28 @@ def disabled_train(self, mode=True):
     does not change anymore."""
     return self
 
+
 class HyperColumnLGN(nn.Module):
-    def __init__(self,key=0,hypercond=[0],restore_ckpt = './hypercolumn/checkpoint/imagenet/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
+    def __init__(self,key=0,hypercond=[0],size=512,restore_ckpt = './hypercolumn/checkpoint/imagenet/equ_nv16_vl4_rn1_Bipolar_norm.pth'):
         super().__init__()
         ckpt = torch.load(restore_ckpt)
         hc = Column_trans_rot_lgn(ckpt['arg'])
         hc.load_state_dict(ckpt['state_dict'], strict=False)
         self.lgn_ende = hc.lgn_ende[0].eval()
         self.lgn_ende.train = disabled_train
-        
         for param in self.lgn_ende.parameters():
             param.requires_grad = False
 
+        self.resize = transforms.Resize(size)
+        if size is 128:
+            self.pad = nn.ConstantPad2d((1,1,1,1),0.)
+        else:
+            self.pad = nn.Identity()
+        
+
         # self.groups = [[2,3],[0,1,4,8,9,15],[5,6,7,10,12],[11,13,14]]
-        self.groups = [[0,1,4,8,9,15],[2,3],[5,12],[10],[6,7],[11,13,14]]
+        self.groups = [[0,1,4,8,9,15],[2,3],[5,12],[10],[6,7],[11,13,14],[5],[12],[2],[3]]
+        # self.groups = [[2],[3],[5],[12]]
             
         # self.p = [1.,0.5,0.25,0.125]
         self.p = [0. for i in range(len(self.groups))]
@@ -104,6 +113,7 @@ class HyperColumnLGN(nn.Module):
     #     return self.lgn_ende(self.norm(x))*r
     
     def forward(self,x):
+        x = self.resize(x)
         s = x.size()
         r = torch.zeros(1,16,1,1).to(x.device)
 
@@ -122,9 +132,15 @@ class HyperColumnLGN(nn.Module):
                     r[:,j,:,:] = 1
 
         r = repeat(r,'n c h w -> n (c repeat) h w',repeat=4)
-        return self.lgn_ende.deconv(self.lgn_ende(self.norm(x))*r)
+        out = self.lgn_ende(self.norm(x))*r
+        # print('out_conv:',out.size())
+        out = self.pad(self.lgn_ende.deconv(out))
+        # out = self.lgn_ende.deconv(self.lgn_ende(self.norm(x))*r)
+        # print('out:',out.size())
+        return out
     
     def deconv(self,x):
+        x = self.resize(x)
         s = x.size()
         r = torch.zeros(1,16,1,1).to(x.device)
         if self.cond is not None:
@@ -138,6 +154,14 @@ class HyperColumnLGN(nn.Module):
         deconv = (deconv - reduce(deconv,'b c h w -> b c () ()', 'min'))/(reduce(deconv,'b c h w -> b c () ()', 'max')-reduce(deconv,'b c h w -> b c () ()', 'min'))*2.-1.
 
         return deconv
+    
+class Canny(nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self,x):
+        return x
+    def deconv(self,x):
+        return x
 
 
 class ControlNet(nn.Module):
@@ -170,7 +194,8 @@ class ControlNet(nn.Module):
             num_attention_blocks=None,
             disable_middle_self_attn=False,
             use_linear_in_transformer=False,
-            hypercond=[0]
+            hyperconfig=None,
+            stride=[2,2,2],
     ):
         super().__init__()
         if use_spatial_transformer:
@@ -223,6 +248,7 @@ class ControlNet(nn.Module):
         self.num_head_channels = num_head_channels
         self.num_heads_upsample = num_heads_upsample
         self.predict_codebook_ids = n_embed is not None
+        self.hypercolumn = instantiate_from_config(hyperconfig)
 
         time_embed_dim = model_channels * 4
         self.time_embed = nn.Sequential(
@@ -273,21 +299,22 @@ class ControlNet(nn.Module):
         # )
 
         self.input_hint_block_new = TimestepEmbedSequential(
-            HyperColumnLGN(hypercond=hypercond),
-            # nn.SiLU(),
+            # HyperColumnLGN(hypercond=hypercond),
+            # Canny(),
+            self.hypercolumn,
             conv_nd(dims, hint_channels, 16, 3, padding=1),
             nn.SiLU(),
             conv_nd(dims, 16, 16, 3, padding=1),
             nn.SiLU(),
-            conv_nd(dims, 16, 32, 3, padding=1, stride=2),
+            conv_nd(dims, 16, 32, 3, padding=1, stride=stride[0]),
             nn.SiLU(),
             conv_nd(dims, 32, 32, 3, padding=1),
             nn.SiLU(),
-            conv_nd(dims, 32, 96, 3, padding=1, stride=2),
+            conv_nd(dims, 32, 96, 3, padding=1, stride=stride[1]),
             nn.SiLU(),
             conv_nd(dims, 96, 96, 3, padding=1),
             nn.SiLU(),
-            conv_nd(dims, 96, 256, 3, padding=1, stride=2),
+            conv_nd(dims, 96, 256, 3, padding=1, stride=stride[2]),
             nn.SiLU(),
             zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
         )
@@ -425,9 +452,11 @@ class ControlNet(nn.Module):
         outs = []
 
         h = x.type(self.dtype)
+        # print('h:',h.size())
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
             if guided_hint is not None:
                 h = module(h, emb, context)
+                # print('h:',h.size())
                 h += guided_hint
                 guided_hint = None
             else:
@@ -442,13 +471,16 @@ class ControlNet(nn.Module):
 
 class ControlLDM(LatentDiffusion):
 
-    def __init__(self, control_stage_config, control_key, only_mid_control, *args, **kwargs):
+    def __init__(self, control_stage_config, control_key, only_mid_control,control_step=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.control_model = instantiate_from_config(control_stage_config)
         self.control_key = control_key
         self.only_mid_control = only_mid_control
-        self.control_scales = [1.0] * 13
-        self.hypercond = control_stage_config['params']['hypercond']
+        self.control_scales = [1.] * 13
+        self.control_step = control_step
+        # self.control_scales = [1.5] * 4 + [1.]*3 + [0.75]*3 + [0.5]*3
+        # self.control_scales = [4.,4.,4.,4.,2.,2.,2.,1.,1.,1.,0.5,0.5,0.5]
+        self.hypercond = control_stage_config['params']['hyperconfig']['params']['hypercond']
         self.select()
     
     def training_step(self, batch, batch_idx):
@@ -474,6 +506,7 @@ class ControlLDM(LatentDiffusion):
     def apply_model(self, x_noisy, t, cond, *args, **kwargs):
         assert isinstance(cond, dict)
         diffusion_model = self.model.diffusion_model
+        # print('t:',t)
 
         cond_txt = torch.cat(cond['c_crossattn'], 1)
 
@@ -481,7 +514,10 @@ class ControlLDM(LatentDiffusion):
             eps = diffusion_model(x=x_noisy, timesteps=t, context=cond_txt, control=None, only_mid_control=self.only_mid_control)
         else:
             control = self.control_model(x=x_noisy, hint=torch.cat(cond['c_concat'], 1), timesteps=t, context=cond_txt)
-            control = [c * scale for c, scale in zip(control, self.control_scales)]
+            if t[0]<self.control_step:
+                control = [c * 0. for c, scale in zip(control, self.control_scales)]
+            else:
+                control = [c * scale for c, scale in zip(control, self.control_scales)]
             eps = diffusion_model(x=x_noisy, timesteps=t, context=cond_txt, control=control, only_mid_control=self.only_mid_control)
 
         return eps
@@ -536,7 +572,7 @@ class ControlLDM(LatentDiffusion):
                 denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
                 log["denoise_row"] = denoise_grid
 
-        if unconditional_guidance_scale > 1.0:
+        if unconditional_guidance_scale >= -1.0:
             uc_cross = self.get_unconditional_conditioning(N)
             uc_cat = c_cat  # torch.zeros_like(c_cat)
             uc_full = {"c_concat": [uc_cat], "c_crossattn": [uc_cross]}
