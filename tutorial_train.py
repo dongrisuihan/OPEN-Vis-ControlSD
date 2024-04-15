@@ -9,13 +9,13 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 import os
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
-resume_path = './image_log/checkpoint_deconv_down2_3/last.ckpt'
 modelarch_path = './models/cldm_v15.yaml'
-logger_path = 'bihua/deconv_down2_3_test200'
-checkpoint_path = f'image_log/checkpoint_down2_0/'
+resume_path = './image_log/checkpoint_deconv_down2_3/last.ckpt'
+logger_path = 'shuimo/deconv_down2_3_test'
 dataset_name_list = ['MyDatasetCOCO','MyDatasetCOCO_canny','MyDatasetCOCO_val','MyDatasetCOCO_val_canny','MyDatasetBihua','MyDatasetBihuaCanny','MyDatasetShuimo','MyDatasetShuimoCanny']
-dataset_name = 'MyDatasetBihua'
+dataset_name = 'MyDatasetShuimo'
 
+checkpoint_path = f'image_log/checkpoint_down2_0/'
 # Configs train
 # resume_path = './models/control_sd15_ini.ckpt'
 # resume_path = './image_log/checkpoint/last.ckpt'
@@ -31,7 +31,7 @@ logger_freq = 1
 learning_rate = 0.
 sd_locked = True
 only_mid_control = False
-max_epoch = 3
+max_epoch = 1
 iftrain = False
 
 
