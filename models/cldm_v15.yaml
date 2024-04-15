@@ -18,7 +18,7 @@ model:
     use_ema: False
     only_mid_control: False
 
-    control_step: 200
+    control_step: 0
 
     control_stage_config:
       target: cldm.cldm.ControlNet
