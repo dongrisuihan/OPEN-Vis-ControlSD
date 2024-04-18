@@ -21,7 +21,6 @@ In file tutorial_train.py
 modelarch_path = './models/cldm_v15.yaml'
 resume_path = './image_log/checkpoint_deconv_down2_3/last.ckpt'
 logger_path = 'shuimo_deconv2_3_test'
-# dataset_name_list = ['MyDatasetCOCO','MyDatasetCOCO_canny','MyDatasetCOCO_val','MyDatasetCOCO_val_canny','MyDatasetBihua','MyDatasetBihuaCanny','MyDatasetShuimo','MyDatasetShuimoCanny']
 dataset_name = 'MyDatasetShuimo'
 
 # Set the selected hypercolumn
