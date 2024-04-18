@@ -8,11 +8,11 @@ from cldm.model import create_model, load_state_dict
 from pytorch_lightning.callbacks import ModelCheckpoint
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 modelarch_path = './models/cldm_v15.yaml'
 resume_path = './image_log/checkpoint_deconv_down2_3/last.ckpt'
-logger_path = 'shuimo/deconv_down2_3_test'
-dataset_name_list = ['MyDatasetCOCO','MyDatasetCOCO_canny','MyDatasetCOCO_val','MyDatasetCOCO_val_canny','MyDatasetBihua','MyDatasetBihuaCanny','MyDatasetShuimo','MyDatasetShuimoCanny']
+logger_path = 'shuimo_deconv2_3_test'
+# dataset_name_list = ['MyDatasetCOCO','MyDatasetCOCO_canny','MyDatasetCOCO_val','MyDatasetCOCO_val_canny','MyDatasetBihua','MyDatasetBihuaCanny','MyDatasetShuimo','MyDatasetShuimoCanny']
 dataset_name = 'MyDatasetShuimo'
 
 checkpoint_path = f'image_log/checkpoint_down2_0/'
@@ -31,7 +31,7 @@ logger_freq = 1
 learning_rate = 0.
 sd_locked = True
 only_mid_control = False
-max_epoch = 1
+max_epoch = 5
 iftrain = False
 
 
