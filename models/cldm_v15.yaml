@@ -37,15 +37,16 @@ model:
         use_checkpoint: True
         legacy: False
 
-        stride: [1,2,2]
+        stride: [2,2,2]
 
         hyperconfig:
           target: cldm.cldm.HyperColumnLGN
           params: 
-            hypercond: [3]
-            size: 256
+            hypercond: [0]
+            size: 512
           # target: cldm.cldm.Canny
-          # # params: 
+          # params: 
+          #   para: None
 
 
     unet_config:

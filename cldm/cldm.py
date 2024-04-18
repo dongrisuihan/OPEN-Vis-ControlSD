@@ -156,7 +156,7 @@ class HyperColumnLGN(nn.Module):
         return deconv
     
 class Canny(nn.Module):
-    def __init__(self):
+    def __init__(self,para=None):
         super().__init__()
     def forward(self,x):
         return x
@@ -480,7 +480,10 @@ class ControlLDM(LatentDiffusion):
         self.control_step = control_step
         # self.control_scales = [1.5] * 4 + [1.]*3 + [0.75]*3 + [0.5]*3
         # self.control_scales = [4.,4.,4.,4.,2.,2.,2.,1.,1.,1.,0.5,0.5,0.5]
-        self.hypercond = control_stage_config['params']['hyperconfig']['params']['hypercond']
+        if isinstance(self.control_model.hypercolumn,HyperColumnLGN):
+            self.hypercond = control_stage_config['params']['hyperconfig']['params']['hypercond']
+        else:
+            self.hypercond = [0]
         self.select()
     
     def training_step(self, batch, batch_idx):
