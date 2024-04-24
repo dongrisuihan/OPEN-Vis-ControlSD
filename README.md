@@ -1,14 +1,15 @@
-# Model architecture of OPEN-Vis-ControlSD
+# OPEN-Vis-ControlSD
 
-Our model is based our trained Hypercolumn-like features and ControlNet. The hypercolumn-like features are trained by a self-supervised method. Basing on the hypercolumn-like features, we train several controlnets and it can generalize to multiple tasks such as 
+Our model is built upon our trained modular Hypercolumn-like features and ControlNet. The hypercolumn-like features are trained using a self-supervised method. Based on these features, we train several ControlNets. This approach utilizes a comprehensive modular feature set that is automatically learned and differentiated, resulting in robustness and generalization transfer capabilities. By configuring and combining appropriate control modules, it can effectively transfer to features without prior learning. We exclusively train them on the COCO dataset, yet they demonstrate the ability to generalize across various image styles, including those generated from ancient rock paintings, Chinese monochromes, oil paintings, scribbles, and more. Notably, it maintains strong performance even when dealing with lower-quality ancient rock paintings and oil paintings. 
 
-The Hypercolumn-like features are shown as following:
+The modular Hypercolumn-like features are shown as following:
 
 ![img](github_page/hypercolumn.png)
 
 The whole architecture is:
 
 ![img](github_page/Vis_Control.png)
+![alt text](image.png)
 
 Issues about ControlNet refer to (https://github.com/lllyasviel/ControlNet/blob/main/docs/train.md).
 
@@ -35,7 +36,7 @@ In file ./models/cldm_v15.yaml
 
 # Run
 
-python tutorial_train.py 
+python tutorial_train.py
 
 # Results
 
@@ -61,7 +62,7 @@ hypercolumn 4
 hypercolumn 5
 ![img](github_page/img5.png)
 
-Ancient murals
+Ancient rock painting:
 ![img](github_page/bihua.png)
 
 Oil painting. The first line are the origin images. The second line are the conditions. The last line are the generated images.
@@ -75,9 +76,7 @@ Hypercolumn:
 Scribble:
 ![img](github_page/scribble.png)
 
-Ink painting. The first line are the origin images. The second line are the conditions by hypercolumn. The last two line are the generated images.
+Chinese monochromes. The first line are the origin images. The second line are the conditions by hypercolumn. The last two line are the generated images.
 ![img](github_page/shuimo1.png)
 
 ![img](github_page/shuimo2.png)
-
-
