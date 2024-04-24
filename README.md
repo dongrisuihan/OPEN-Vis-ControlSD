@@ -9,13 +9,13 @@ The modular Hypercolumn-like features are shown as following:
 The whole architecture is:
 
 ![img](github_page/Vis_Control.png)
-![alt text](image.png)
+<!-- ![alt text](image.png) -->
 
 Issues about ControlNet refer to (https://github.com/lllyasviel/ControlNet/blob/main/docs/train.md).
 
 The checkpoint will be released soon.
 
-# Run the network, set model archtecture file, checkpoint file, logger file and dataset
+# Setting
 
 In file tutorial_train.py
 
@@ -24,7 +24,7 @@ resume_path = './image_log/checkpoint_deconv_down2_3/last.ckpt'
 logger_path = 'shuimo_deconv2_3_test'
 dataset_name = 'MyDatasetShuimo'
 
-# Set the selected hypercolumn
+# Select Hypercolumn
 
 In file ./models/cldm_v15.yaml
 
@@ -80,3 +80,4 @@ Chinese monochromes. The first line are the origin images. The second line are t
 ![img](github_page/shuimo1.png)
 
 ![img](github_page/shuimo2.png)
+
