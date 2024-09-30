@@ -1,17 +1,20 @@
-# 🤔 Learning from Pattern Completion: Self-supervised Controllable Generation
+# 🤔 💭 Learning from Visual Pattern Completion
 
-Inspired by the cortical modularization and hippocampal pattern completion, we propose a self-supervised controllable generation (**SCG**) framework to achieve pattern completion and generate images.
+> Inspired by the cortical modularization and hippocampal pattern completion, we propose a self-supervised controllable generation (**SCG**) framework to achieve pattern completion and generate images.
 
-[![Project Page](https://img.shields.io/badge/Project-Page-Green.svg)](https://qizekun.github.io/shapellm/)
-[![Paper PDF](https://img.shields.io/badge/Paper-PDF-orange.svg)](https://arxiv.org/abs/2402.17766)
-[![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/tatsu-lab/stanford_alpaca/blob/main/LICENSE)
-[![Data License](https://img.shields.io/badge/Data%20License-CC%20By%20NC%204.0-red.svg)](https://github.com/tatsu-lab/stanford_alpaca/blob/main/DATA_LICENSE)
+[![Project Page](https://img.shields.io/badge/Project-Page-Green.svg)](https://github.com/BAAI-Brain-Inspired-Group/OPEN-Vis-ControlSD/)
+[![Gitee Mirror](https://img.shields.io/badge/Gitee-Mirror-blue.svg)](https://gitee.com/chenzq/control-net-main)
+[![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](./LICENSE)
+
+**Learning from Pattern Completion: Self-supervised Controllable Generation (NeurIPS 2024) [[Arxiv]](https://arxiv.org/abs/2409.18694) [[OpenReview]](https://openreview.net/forum?id=83pV20DD2s&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2024%2FConference%2FAuthors%23your-submissions))**
+
+[Zhiqiang Chen*](https://github.com/dongrisuihan), [Guofan Fan*](https://github.com/Asterisci), [Jinying Gao*](https://github.com/JY-Gao), [Lei Ma](https://nbic.pku.edu.cn/rcdw/kyry/02c5f5ce8e254b1e82a48bebd0a24c33.htm), [Bo Lei](https://github.com/Bolei-engram), [Tiejun Huang](https://idm.pku.edu.cn/tjhuang), [Shan Yu](https://people.ucas.ac.cn/~yushan?language=en)
 
 ![img](docs/intro.png)
 
-## News
+## 📰 News
 
-- 🍾 Sep, 2024: [**SCG**](https://qizekun.github.io/shapellm/) is accepted by NeurIPS 2024, congratulations! We will release offical version as soon, please check in homepage.
+- 🍾 Sep, 2024: [**SCG**](https://github.com/BAAI-Brain-Inspired-Group/OPEN-Vis-ControlSD/) is accepted by NeurIPS 2024, congratulations! We will release offical version as soon, please check in homepage.
 - 🎉 Apr, 2024: For those interested, we update a [pre-release code](https://gitee.com/chenzq/control-net-main) in Gitee.
 
 
@@ -104,16 +107,16 @@ The first line are the origin images. The second line are the conditions by hype
 If you find our work helpful for your research. Please consider citing our paper.
 
 ```
-@article{point-gcc,
+@article{scg,
   title={Learning from Pattern Completion: Self-supervised Controllable Generation},
-  author={Zhiqiang Chen, Guofan Fan, Jinying Gao, Lei Ma, Bo Lei, Tiejun Huang, Shan Yu},
-  journal={arXiv preprint arXiv:2305.19623},
-  year={2023}
+  author={Zhiqiang Chen, Guofan Fan, Jinying Gao, Lei Ma, Bo Lei, Tiejun Huang and Shan Yu},
+  journal={arXiv preprint arXiv:2409.18694},
+  year={2024}
 }
 ```
 
 ## 📕 Acknowledgement and License
 
-Our code is based on ControlNet. Thanks for their wonderful work!
+Our code is based on [ControlNet](https://github.com/lllyasviel/ControlNet). Thanks for their wonderful work!
 
 SCG is licensed under the Apache License. See the LICENSE file for more details.
