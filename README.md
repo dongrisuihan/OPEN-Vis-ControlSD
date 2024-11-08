@@ -21,13 +21,7 @@
 
 Our original motivation is to propose and validate a novel self-supervised pipeline to achieve broad generalizations.
 
-1. This framework comprises two components: a modular autoencoder and a conditional generator. Given the extensive research on conditional generation, we leverage the existing, mature ControlNet for this aspect. Our core contribution lies in designing a modular autoencoder based on proposed equivariance constraint, successfully enabling the network to spontaneously develop relatively independent and highly complementary modular features. These features are crucial for subsequent conditional generation.
-
-2. We propose SCG and experimentally demonstrate that it can spontaneously emerge (or 0-shot generalize) various abilities, including super-resolution, dehazing, saturation and contrast manipulation, as well as conditional generation based on diverse styles such as oil paintings, ink paintings, ancient graffiti, sketches, and LineArt. Furthermore, SCG possesses two significant potentials: (1) Leveraging its self-supervision, SCG can further scale up its data and models to benefit from the scaling law, enhancing its basic capabilities; (2) Subsequently, SCG can be fine-tuned for specific tasks, leading to improved performance on particular tasks. These potentials suggest that SCG has the potential to become a foundation model for controllable generation. This framework comprises two components: a modular autoencoder and a conditional generator. Given the extensive research on conditional generation, we leverage the existing, mature ControlNet for this aspect. Our core contribution lies in designing a modular autoencoder based on proposed equivariance constraint, successfully enabling the network to spontaneously develop relatively independent and highly complementary modular features. These features are crucial for subsequent conditional generation.
-
-## 📄 Introduction
-
-The human brain exhibits a strong ability to spontaneously associate different visual attributes of the same or similar visual scene, such as associating sketches and graffiti with real-world visual objects, usually without supervising information. In contrast, in the field of artificial intelligence, controllable generation methods like ControlNet heavily rely on annotated training datasets such as depth maps, semantic segmentation maps, and poses, which limits the method’s scalability. Inspired by the neural mechanisms that may contribute to the brain’s associative power, specifically the cortical modularization and hippocampal pattern completion, here we propose a self-supervised controllable generation (SCG) framework. Firstly, we introduce an equivariance constraint to promote inter-module independence and intra-module correlation in a modular autoencoder network, thereby achieving functional specialization. Subsequently, based on these specialized modules, we employ a self-supervised pattern completion approach for controllable generation training. Experimental results demonstrate that the proposed modular autoencoder effectively achieves functional specialization, including the modular processing of color, brightness, and edge detection, and exhibits brain-like features including orientation selectivity, color antagonism, and center-surround receptive fields. Through self-supervised training, associative generation capabilities spontaneously emerge in SCG, demonstrating excellent zero-shot generalization ability to various tasks such as superresolution, dehaze and associative or conditional generation on painting, sketches, and ancient graffiti. Compared to the previous representative method ControlNet, our proposed approach not only demonstrates superior robustness in more challenging high-noise scenarios but also possesses more promising scalability potential due to its self-supervised manner.
+This framework comprises two components: a modular autoencoder and a conditional generator. Given the extensive research on conditional generation, we leverage the existing, mature ControlNet for this aspect. Our core contribution lies in designing a modular autoencoder based on proposed equivariance constraint, successfully enabling the network to spontaneously develop relatively independent and highly complementary modular features. These features are crucial for subsequent conditional generation.
 
 ## 🛠️ Installation
 
@@ -65,7 +59,7 @@ During inferance phrase, we use a single A100 GPU and it requires about 11G RAM 
 
 ![img](docs/ModularAutoencoder.png)
 
-The equivariance loss is the core of the equivariant constraint, primarily serving to increase independence between modules and correlation (or symmetry) within modules. The symmetry loss further enhances the correlation (or symmetry) of features within modules and suppresses the emergence of multiple unrelated features within the same module. The learned feature is visualized in the following:
+We propose a equivariance constraint for our modular autoencoder. The equivariance loss Lequ is the core of the equivariant constraint, primarily serving to increase independence between modules and correlation (or symmetry) within modules. The symmetry loss Lsym further enhances the correlation (or symmetry) of features within modules and suppresses the emergence of multiple unrelated features within the same module. The learned feature is visualized in the following:
 
 ![img](docs/ModularDiff2.png)
 
@@ -87,7 +81,7 @@ The first line are the origin image and the prompt. The second line are conditio
 ![img](docs/scribble.png)
 
 - Oil painting and Chinese washing and ink painting
-![img](docs/paining1.png)
+![img](docs/painting1.png)
 
 - Ancient graffiti
 ![img](docs/bihua2.png)
@@ -100,9 +94,18 @@ The first line are the origin image and the prompt. The second line are conditio
 
 ![img](docs/SR_Dehaze.png)
 
+### Manipulation
+
+![img](docs/maniplate.png)
+
+
 ### Ablation study on equivariance constraint
 
 ![img](docs/figr3_00.png)
+
+## Conclusion
+
+We propose SCG and experimentally demonstrate that it can spontaneously emerge (or 0-shot generalize) various abilities, including super-resolution, dehazing, saturation and contrast manipulation, as well as conditional generation based on diverse styles such as oil paintings, ink paintings, ancient graffiti, sketches, and LineArt. Furthermore, SCG possesses two significant potentials: (1) Leveraging its self-supervision, SCG can further scale up its data and models to benefit from the scaling law, enhancing its basic capabilities; (2) Subsequently, SCG can be fine-tuned for specific tasks, leading to improved performance on particular tasks. These potentials suggest that SCG has the potential to become a foundation model for controllable generation. This framework comprises two components: a modular autoencoder and a conditional generator. Given the extensive research on conditional generation, we leverage the existing, mature ControlNet for this aspect. Our core contribution lies in designing a modular autoencoder based on proposed equivariance constraint, successfully enabling the network to spontaneously develop relatively independent and highly complementary modular features. These features are crucial for subsequent conditional generation.
 
 ## 📌 Citation
 If you find our work helpful for your research. Please consider citing our paper.
