@@ -55,7 +55,7 @@ hyperconfig:
 
 During inferance phrase, we use a single A100 GPU and it requires about 11G RAM to run it per image.
 
-## Modular Autoencoder
+## 📲 Modular Autoencoder
 
 ![img](docs/ModularAutoencoder.png)
 
@@ -63,47 +63,46 @@ We propose a equivariance constraint for our modular autoencoder. The equivarian
 
 ![img](docs/ModularDiff2.png)
 
-## 🖼️ Results
+## 🎯 Results
 
 **To find more result, please refer to our papers.**
 
 The models are trained on only COCO dataset and test on multiple tasks.
 
-### Conditional generation with different modular on COCO
+### 🐻 Conditional generation on COCO
 
 ![img](docs/cocoval2.png)
 
 The first line are the origin image and the prompt. The second line are conditions of multiple hypercolumn and canny. The last line are the generated images
 
-### 0-shot generation
+### 🐻‍❄️ 0-shot generation
 
-- Scribble
+- 🐻‍❄️Scribble
 ![img](docs/scribble.png)
 
-- Oil painting and Chinese washing and ink painting
+- 🐨 Oil painting and Chinese washing and ink painting
 ![img](docs/painting1.png)
 
-- Ancient graffiti
+- 🐼 Ancient graffiti
 ![img](docs/bihua2.png)
 
-### Comparison with ControlNet
+### 🐨 Comparison with ControlNet
 
 ![img](docs/figr1_00.png)
 
-### More tasks under 0-shot generalization abilities
+### 🐼 More tasks under 0-shot generalization abilities
 
 ![img](docs/SR_Dehaze.png)
 
-### Manipulation
+### 🦥 Manipulation
 
 ![img](docs/maniplate.png)
 
-
-### Ablation study on equivariance constraint
+## 🦚 Ablation study
 
 ![img](docs/figr3_00.png)
 
-## Discussion
+## 🦁 Discussion
 
 We propose SCG and experimentally demonstrate that it can spontaneously emerge (or 0-shot generalize) various abilities, including super-resolution, dehazing, saturation and contrast manipulation, as well as conditional generation based on diverse styles such as oil paintings, ink paintings, ancient graffiti, sketches, and LineArt. Furthermore, SCG possesses two significant potentials: (1) Leveraging its self-supervision, SCG can further scale up its data and models to benefit from the scaling law, enhancing its basic capabilities; (2) Subsequently, SCG can be fine-tuned for specific tasks, leading to improved performance on particular tasks. These potentials suggest that SCG has the potential to become a foundation model for controllable generation. This framework comprises two components: a modular autoencoder and a conditional generator. Given the extensive research on conditional generation, we leverage the existing, mature ControlNet for this aspect. Our core contribution lies in designing a modular autoencoder based on proposed equivariance constraint, successfully enabling the network to spontaneously develop relatively independent and highly complementary modular features. These features are crucial for subsequent conditional generation.
 
