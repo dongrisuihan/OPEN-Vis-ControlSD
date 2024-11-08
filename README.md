@@ -12,6 +12,8 @@
 
 ![img](docs/intro.png)
 
+![img](docs/ModularAutoencoder.png)
+
 ## 📰 News
 
 - 🍾 Sep, 2024: [**SCG**](https://github.com/BAAI-Brain-Inspired-Group/OPEN-Vis-ControlSD/) is accepted by NeurIPS 2024, congratulations! We will release offical version as soon, please check in homepage.
