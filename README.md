@@ -1,4 +1,4 @@
-# 🤔 💭 Learning from Pattern Completion
+# 🤔Learning from Visual Pattern Completion
 
 > Inspired by the cortical modularization and hippocampal pattern completion, we propose a self-supervised controllable generation (**SCG**) framework to achieve pattern completion and generate images.
 
